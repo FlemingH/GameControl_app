@@ -5,4 +5,9 @@
     <string name="password">密码</string>
     <string name="usernameHint">username</string>
     <string name="passwordHint">password</string>
+    <string name="tvapp">移动控制器</string>
+    <string name="tvweb">桌面端</string>
+    <string name="onlines">在线</string>
+    <string name="offlines">未上线</string>
+    <string name="goc">进入控制</string>
 </resources>
