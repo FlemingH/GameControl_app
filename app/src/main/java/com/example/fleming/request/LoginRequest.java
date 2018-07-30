@@ -8,8 +8,7 @@ public class LoginRequest {
     /**
      * @param username
      * @param password
-     * @return 登陆是否成功
-     * 如果成功向服务器发送上线信息
+     * @return 登录是否成功
      */
     public static boolean IsLoginSuccess(String username,String password) {
 
@@ -22,6 +21,16 @@ public class LoginRequest {
         }
 
         return flag;
+    }
+
+    /**
+     * @param username
+     * 登录成功后向服务器发送我已准备好，请把登录信息添加到Map里
+     */
+    public static void IAmReady(String username) {
+
+        Tools.httpRequest("http://118.25.180.193:8090/AppIsReady?username="+username,"GET");
+
     }
 
 }

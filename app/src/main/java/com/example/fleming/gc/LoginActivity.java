@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.fleming.request.LoginRequest;
+import com.example.fleming.util.Tools;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -27,15 +28,36 @@ public class LoginActivity extends AppCompatActivity {
         lbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boolean flag = LoginRequest.IsLoginSuccess(username.getText().toString(), password.getText().toString());
 
-                if (flag) {
-                    Intent intent = new Intent(LoginActivity.this, OnlineActivity.class);
-                    startActivity(intent);
+                if("".equals(username.getText().toString()) || "".equals(password.getText().toString())){
+
+                    Toast.makeText(LoginActivity.this,"请补全信息",Toast.LENGTH_SHORT).show();
+
                 } else {
-                    Toast.makeText(LoginActivity.this,"账号或密码输入错误",Toast.LENGTH_SHORT).show();
+
+                    boolean flag = LoginRequest.IsLoginSuccess(username.getText().toString(), password.getText().toString());
+
+                    if (flag) {
+
+                        //向服务器发送我准备好的请求
+                        LoginRequest.IAmReady(username.getText().toString());
+
+                        Intent intent = new Intent();
+                        intent.setClass(LoginActivity.this, OnlineActivity.class);
+
+                        Bundle bundle = new Bundle();
+                        bundle.putString("username",username.getText().toString());
+
+                        intent.putExtras(bundle);
+
+                        startActivityForResult(intent,0);
+                    } else {
+                        Toast.makeText(LoginActivity.this,"账号或密码输入错误",Toast.LENGTH_SHORT).show();
+                    }
+
                 }
             }
+
         });
 
     }
