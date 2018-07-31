@@ -11,7 +11,7 @@
     <string name="offlines">未上线</string>
     <string name="goc">进入控制</string>
 
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="dummy_button">可以开始</string>
+    <string name="dummy_content">向右横放\nReady?</string>
 
 </resources>
