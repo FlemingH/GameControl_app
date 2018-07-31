@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.fleming.request.LoginRequest;
+import com.example.fleming.request.OnlineRequest;
 import com.example.fleming.util.Tools;
 
 public class LoginActivity extends AppCompatActivity {
@@ -35,24 +36,28 @@ public class LoginActivity extends AppCompatActivity {
 
                 } else {
 
-                    boolean flag = LoginRequest.IsLoginSuccess(username.getText().toString(), password.getText().toString());
+                    boolean isAppOnline = OnlineRequest.isAppOnline(username.getText().toString());
 
-                    if (flag) {
-
-                        //向服务器发送我准备好的请求
-                        LoginRequest.IAmReady(username.getText().toString());
-
-                        Intent intent = new Intent();
-                        intent.setClass(LoginActivity.this, OnlineActivity.class);
-
-                        Bundle bundle = new Bundle();
-                        bundle.putString("username",username.getText().toString());
-
-                        intent.putExtras(bundle);
-
-                        startActivityForResult(intent,0);
+                    if(isAppOnline) {
+                        Toast.makeText(LoginActivity.this,"账号已在其他地方登录",Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(LoginActivity.this,"账号或密码输入错误",Toast.LENGTH_SHORT).show();
+
+                        boolean flag = LoginRequest.IsLoginSuccess(username.getText().toString(), password.getText().toString());
+
+                        if (flag) {
+                            //直接跳转，在下个页面创建的时候向服务器发送我上线的请求
+                            Intent intent = new Intent();
+                            intent.setClass(LoginActivity.this, OnlineActivity.class);
+
+                            Bundle bundle = new Bundle();
+                            bundle.putString("username",username.getText().toString());
+
+                            intent.putExtras(bundle);
+
+                            startActivityForResult(intent,0);
+                        } else {
+                            Toast.makeText(LoginActivity.this,"账号或密码输入错误",Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                 }
