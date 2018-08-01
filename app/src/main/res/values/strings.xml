@@ -13,5 +13,8 @@
 
     <string name="dummy_button">可以开始</string>
     <string name="dummy_content">向右横放\nReady?</string>
+    <string name="backButton">后退按钮</string>
+    <string name="sButton">减速键</string>
+    <string name="wButton">加速键</string>
 
 </resources>

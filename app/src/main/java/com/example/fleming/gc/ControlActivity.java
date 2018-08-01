@@ -11,15 +11,16 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class ControlActivity extends AppCompatActivity{
 
     //设置打开界面时是否自动隐藏
-    private static final boolean AUTO_HIDE = true;
+    private static final boolean AUTO_HIDE = false;
 
     //点击按钮时自动隐藏的时间间隔
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+    private static final int AUTO_HIDE_DELAY_MILLIS = 500;
 
     /**
      * Some older devices needs a small delay between UI widget updates
@@ -90,6 +91,11 @@ public class ControlActivity extends AppCompatActivity{
 
     private TextView textView;
 
+    //三个按键
+    private ImageButton backButton;
+    private ImageButton wButton;
+    private ImageButton sButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,6 +108,10 @@ public class ControlActivity extends AppCompatActivity{
         mContentView = findViewById(R.id.fullscreen_content);
         textView = findViewById(R.id.fullscreen_content);
 
+        backButton = findViewById(R.id.backButton);
+        wButton = findViewById(R.id.wButton);
+        sButton = findViewById(R.id.sButton);
+
         //点击其他区域的监听器
         mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -112,7 +122,63 @@ public class ControlActivity extends AppCompatActivity{
 
         //按钮设置监听器
         findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+
+        //退出按钮点击触发show事件
+        backButton.setOnClickListener(backOnClickListener);
+
+        //w按钮按下事件：改背景、发socket
+        wButton.setOnTouchListener(wOnTouchListener);
+
+        //s按钮按下：改背景、发socket
+        sButton.setOnTouchListener(sOnTouchListener);
     }
+
+    //----------------------------------------------------------------------------------------------
+
+    private View.OnClickListener backOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            toggle();
+        }
+    };
+
+    //----------------------------------------------------------------------------------------------
+
+    private final View.OnTouchListener wOnTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+
+            //设置按下的动作
+            if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                wButton.setBackgroundResource(R.drawable.b2w);
+
+            //设置抬起的动作
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                wButton.setBackgroundResource(R.drawable.b1w);
+            }
+
+            return false;
+        }
+    };
+
+    //----------------------------------------------------------------------------------------------
+
+    private final View.OnTouchListener sOnTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+
+            //设置按下的动作
+            if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                sButton.setBackgroundResource(R.drawable.b2s);
+
+                //设置抬起的动作
+            } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                sButton.setBackgroundResource(R.drawable.b1s);
+            }
+
+            return false;
+        }
+    };
 
     //----------------------------------------------------------------------------------------------
 
@@ -147,10 +213,35 @@ public class ControlActivity extends AppCompatActivity{
         // Schedule a runnable to remove the status and navigation bar after a delay
         mHideHandler.removeCallbacks(mShowPart2Runnable);
         mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY);
+
+        //隐藏提示；显示三个按键，开启按键
+
+        textView.setVisibility(View.INVISIBLE);
+
+        sButton.setVisibility(View.VISIBLE);
+        wButton.setVisibility(View.VISIBLE);
+        backButton.setVisibility(View.VISIBLE);
+
+        sButton.setEnabled(true);
+        wButton.setEnabled(true);
+        backButton.setEnabled(true);
     }
 
     @SuppressLint("InlinedApi")
     private void show() {
+
+        //显示提示，关闭按键，隐藏三个按键
+
+        textView.setVisibility(View.VISIBLE);
+
+        sButton.setEnabled(false);
+        wButton.setEnabled(false);
+        backButton.setEnabled(false);
+
+        sButton.setVisibility(View.INVISIBLE);
+        wButton.setVisibility(View.INVISIBLE);
+        backButton.setVisibility(View.INVISIBLE);
+
         // Show the system bar
         mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
@@ -161,7 +252,6 @@ public class ControlActivity extends AppCompatActivity{
         mHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY);
     }
 
-    //延迟隐藏
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
