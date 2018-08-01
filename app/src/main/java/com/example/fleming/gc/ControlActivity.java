@@ -1,6 +1,7 @@
 package com.example.fleming.gc;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,6 +14,17 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+
+import com.example.fleming.androidService.OnlineService;
+import com.example.fleming.androidService.OnlineSocketService;
+import com.example.fleming.androidService.control.Control;
+import com.example.fleming.request.form.SocketMessage;
+import com.pusher.java_websocket.client.WebSocketClient;
+import com.pusher.java_websocket.drafts.Draft_10;
+import com.pusher.java_websocket.handshake.ServerHandshake;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class ControlActivity extends AppCompatActivity{
 
@@ -70,10 +82,21 @@ public class ControlActivity extends AppCompatActivity{
     private ImageButton wButton;
     private ImageButton sButton;
 
+    //控制socket
+    private WebSocketClient mSocketClient;
+
+    String username = getIntent().getStringExtra("username");
+
+    Control control;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_control);
+
+        initWebSocket(username);
+
+        control = new Control();
 
         //获得系统传感器服务管理权
         MyManage = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -119,10 +142,12 @@ public class ControlActivity extends AppCompatActivity{
             //设置按下的动作
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                 wButton.setBackgroundResource(R.drawable.b2w);
+                control.wButtonDown(mSocketClient);
 
             //设置抬起的动作
             } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                 wButton.setBackgroundResource(R.drawable.b1w);
+                control.wButtonUp(mSocketClient);
             }
 
             return false;
@@ -139,10 +164,12 @@ public class ControlActivity extends AppCompatActivity{
             //设置按下的动作
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                 sButton.setBackgroundResource(R.drawable.b2s);
+                control.sButtonDown(mSocketClient);
 
                 //设置抬起的动作
             } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                 sButton.setBackgroundResource(R.drawable.b1s);
+                control.sButtonUp(mSocketClient);
             }
 
             return false;
@@ -229,6 +256,41 @@ public class ControlActivity extends AppCompatActivity{
 
     //----------------------------------------------------------------------------------------------
 
+    private void initWebSocket(final String username) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                URI uri = null;
+
+                try {
+                    uri = new URI("ws://118.25.180.193:8090/SocketHandle/control/"+username);
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+
+                mSocketClient = new WebSocketClient(uri, new Draft_10()) {
+                    @Override
+                    public void onOpen(ServerHandshake handshakedata) { }
+
+                    @Override
+                    public void onMessage(String message) { }
+
+                    @Override
+                    public void onClose(int code, String reason, boolean remote) { }
+
+                    @Override
+                    public void onError(Exception ex) { }
+                };
+
+            }
+        });
+
+    }
+
+    //----------------------------------------------------------------------------------------------
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -273,6 +335,7 @@ public class ControlActivity extends AppCompatActivity{
 
     @Override
     protected void onDestroy() {
+        mSocketClient.close();
         super.onDestroy();
         //解注册
         MyManage.unregisterListener(MySensor_Gravity_listener);
