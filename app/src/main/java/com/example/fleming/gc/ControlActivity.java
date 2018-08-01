@@ -16,12 +16,6 @@ import android.widget.TextView;
 
 public class ControlActivity extends AppCompatActivity{
 
-    //设置打开界面时是否自动隐藏
-    private static final boolean AUTO_HIDE = false;
-
-    //点击按钮时自动隐藏的时间间隔
-    private static final int AUTO_HIDE_DELAY_MILLIS = 500;
-
     /**
      * Some older devices needs a small delay between UI widget updates
      * and a change of the status and navigation bar.
@@ -59,26 +53,6 @@ public class ControlActivity extends AppCompatActivity{
         }
     };
     private boolean mVisible;
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide();
-        }
-    };
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
-    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (AUTO_HIDE) {
-                delayedHide(AUTO_HIDE_DELAY_MILLIS);
-            }
-            return false;
-        }
-    };
 
     //----------------------------------------------------------------------------------------------
 
@@ -112,16 +86,8 @@ public class ControlActivity extends AppCompatActivity{
         wButton = findViewById(R.id.wButton);
         sButton = findViewById(R.id.sButton);
 
-        //点击其他区域的监听器
-        mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggle();
-            }
-        });
-
         //按钮设置监听器
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+        findViewById(R.id.dummy_button).setOnClickListener(dummyButtonOnClickListener);
 
         //退出按钮点击触发show事件
         backButton.setOnClickListener(backOnClickListener);
@@ -135,6 +101,7 @@ public class ControlActivity extends AppCompatActivity{
 
     //----------------------------------------------------------------------------------------------
 
+    //返回键事件
     private View.OnClickListener backOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -144,6 +111,7 @@ public class ControlActivity extends AppCompatActivity{
 
     //----------------------------------------------------------------------------------------------
 
+    //加速键事件
     private final View.OnTouchListener wOnTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -163,6 +131,7 @@ public class ControlActivity extends AppCompatActivity{
 
     //----------------------------------------------------------------------------------------------
 
+    //减速键事件
     private final View.OnTouchListener sOnTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -182,15 +151,21 @@ public class ControlActivity extends AppCompatActivity{
 
     //----------------------------------------------------------------------------------------------
 
-    //当Activity彻底运行起来的回调函数
+    //点击准备按钮，开始！
+    private final View.OnClickListener dummyButtonOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            toggle();
+        }
+    };
+
+    //----------------------------------------------------------------------------------------------
+
+    //当Activity彻底运行起来的回调函数：当页面加载后，马上调用show()
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-        delayedHide(100);
+        show();
     }
 
     private void toggle() {
@@ -250,11 +225,6 @@ public class ControlActivity extends AppCompatActivity{
         // Schedule a runnable to display UI elements after a delay
         mHideHandler.removeCallbacks(mHidePart2Runnable);
         mHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY);
-    }
-
-    private void delayedHide(int delayMillis) {
-        mHideHandler.removeCallbacks(mHideRunnable);
-        mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
     //----------------------------------------------------------------------------------------------

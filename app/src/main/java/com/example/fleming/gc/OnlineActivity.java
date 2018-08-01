@@ -1,5 +1,6 @@
 package com.example.fleming.gc;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -27,12 +28,12 @@ public class OnlineActivity extends AppCompatActivity{
     //此webSocket用来向web端传输在线信息、接收对面在线信息、发送下线信息、接受下线信息、自己的强制下线
     private WebSocketClient mSocketClient;
 
+    String username = this.getIntent().getExtras().getString("username");
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_online);
-
-        String username = this.getIntent().getExtras().getString("username");
 
         //向服务器发送我上线了
         LoginRequest.IAmReady(username);
@@ -103,7 +104,12 @@ public class OnlineActivity extends AppCompatActivity{
     public final View.OnClickListener bocl = new View.OnClickListener(){
         @Override
         public void onClick(View view) {
-
+            Intent intent = new Intent();
+            intent.setClass(OnlineActivity.this, ControlActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("username", username);
+            intent.putExtras(bundle);
+            startActivityForResult(intent,0);
         }
     };
 
