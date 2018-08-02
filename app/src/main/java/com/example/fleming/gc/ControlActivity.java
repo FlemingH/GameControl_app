@@ -1,7 +1,6 @@
 package com.example.fleming.gc;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -15,10 +14,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.example.fleming.androidService.OnlineService;
-import com.example.fleming.androidService.OnlineSocketService;
 import com.example.fleming.androidService.control.Control;
-import com.example.fleming.request.form.SocketMessage;
 import com.pusher.java_websocket.client.WebSocketClient;
 import com.pusher.java_websocket.drafts.Draft_10;
 import com.pusher.java_websocket.handshake.ServerHandshake;
@@ -70,10 +66,8 @@ public class ControlActivity extends AppCompatActivity{
 
     private SensorManager MyManage;    //新建sensor的管理器
 
-    //新建三轴数据
-    private float x;
-    private float y;
-    private float z;
+    //y轴数据
+    private int y;
 
     private TextView textView;
 
@@ -109,7 +103,7 @@ public class ControlActivity extends AppCompatActivity{
         wButton = findViewById(R.id.wButton);
         sButton = findViewById(R.id.sButton);
 
-        //按钮设置监听器
+        //开始按钮设置监听器
         findViewById(R.id.dummy_button).setOnClickListener(dummyButtonOnClickListener);
 
         //退出按钮点击触发show事件
@@ -256,6 +250,7 @@ public class ControlActivity extends AppCompatActivity{
 
     //----------------------------------------------------------------------------------------------
 
+    //此websocket只传信息不接收信息：分别在加速减速左右时传信息————五种信息
     private void initWebSocket(final String username) {
 
         new Thread(new Runnable() {
@@ -313,24 +308,20 @@ public class ControlActivity extends AppCompatActivity{
     SensorEventListener MySensor_Gravity_listener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-//            if (event.sensor == null) {
-//                return;
-//            }
-//            //新建加速度计变化事件
-//            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-//                //获取x，y，z三个方向的加速度值
-//                x = event.values[SensorManager.DATA_X];
-//                y = event.values[SensorManager.DATA_Y];
-//                z = event.values[SensorManager.DATA_Z];
-//                textView.setText("x="+(int)x+","+"y="+(int)y+","+"z="+(int)z);
-//            }
+            if (event.sensor == null) {
+                return;
+            }
+            //新建加速度计变化事件
+            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                //获取y的值
+                y = (int) event.values[SensorManager.DATA_Y];
+                //发送数据
+                control.dChange(mSocketClient,y);
+            }
         }
 
         @Override
-        public void onAccuracyChanged(Sensor sensor, int i) {
-
-        }
-
+        public void onAccuracyChanged(Sensor sensor, int i) { }
     };
 
     @Override

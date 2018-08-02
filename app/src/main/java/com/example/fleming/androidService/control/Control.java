@@ -6,8 +6,8 @@ import com.pusher.java_websocket.client.WebSocketClient;
 
 public class Control {
 
-    Gson gson = new Gson();
-    SocketMessage socketMessage = new SocketMessage();
+    private Gson gson = new Gson();
+    private SocketMessage socketMessage = new SocketMessage();
 
     /**
      * w键按下
@@ -58,6 +58,21 @@ public class Control {
     public void sButtonUp(WebSocketClient mSocketClient){
         socketMessage.setData("");
         socketMessage.setMessageType("sButtonUp");
+        String json = gson.toJson(socketMessage);
+
+        if (mSocketClient != null) {
+            mSocketClient.send(json);
+        }
+    }
+
+    /**
+     * 方向改变：-10~9；-10=-9
+     * @param mSocketClient
+     * @param num
+     */
+    public void dChange(WebSocketClient mSocketClient, int num){
+        socketMessage.setData(num+"");
+        socketMessage.setMessageType("dChange");
         String json = gson.toJson(socketMessage);
 
         if (mSocketClient != null) {

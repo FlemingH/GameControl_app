@@ -23,6 +23,7 @@ public class OnlineActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_online);
 
+        //从Control返回不会调用
         //启动服务：向服务器发送在线信息
         Intent intentOnlineService = new Intent(OnlineActivity.this, OnlineService.class);
         Bundle bundle = new Bundle();
