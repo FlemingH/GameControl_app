@@ -1,7 +1,5 @@
 package com.example.fleming.util;
 
-import android.os.StrictMode;
-
 import com.example.fleming.request.form.Message;
 import com.google.gson.Gson;
 

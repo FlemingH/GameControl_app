@@ -210,7 +210,7 @@ public class ControlActivity extends AppCompatActivity{
         mHideHandler.removeCallbacks(mShowPart2Runnable);
         mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY);
 
-        //隐藏提示；显示三个按键，开启按键
+        //隐藏提示；显示三个按键，开启按键，注册重力感应
 
         textView.setVisibility(View.INVISIBLE);
 
@@ -221,12 +221,20 @@ public class ControlActivity extends AppCompatActivity{
         sButton.setEnabled(true);
         wButton.setEnabled(true);
         backButton.setEnabled(true);
+
+        //注册重力感应服务
+        boolean enable = MyManage.registerListener(MySensor_Gravity_listener, MyManage.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                SensorManager.SENSOR_DELAY_UI);
+        if (!enable) {
+            MyManage.unregisterListener(MySensor_Gravity_listener);
+        }
+
     }
 
     @SuppressLint("InlinedApi")
     private void show() {
 
-        //显示提示，关闭按键，隐藏三个按键
+        //显示提示，关闭按键，隐藏三个按键，解注册重力感应
 
         textView.setVisibility(View.VISIBLE);
 
@@ -237,6 +245,8 @@ public class ControlActivity extends AppCompatActivity{
         sButton.setVisibility(View.INVISIBLE);
         wButton.setVisibility(View.INVISIBLE);
         backButton.setVisibility(View.INVISIBLE);
+
+        MyManage.unregisterListener(MySensor_Gravity_listener);
 
         // Show the system bar
         mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -286,18 +296,7 @@ public class ControlActivity extends AppCompatActivity{
 
     //----------------------------------------------------------------------------------------------
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        //注册重力感应服务
-        boolean enable = MyManage.registerListener(MySensor_Gravity_listener, MyManage.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_UI);
-        if (!enable) {
-            MyManage.unregisterListener(MySensor_Gravity_listener);
-        }
-    }
-
-    //activity暂停事件
+    //activity暂停事件：暂停时解注册重力感应
     @Override
     protected void onPause() {
         super.onPause();
