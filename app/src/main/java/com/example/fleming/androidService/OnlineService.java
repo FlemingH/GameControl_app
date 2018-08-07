@@ -36,7 +36,7 @@ public class OnlineService extends Service{
     @Override
     public void onDestroy() {
 
-        new Thread(new IAmOutHanlder()).start();
+        new Thread(new IAmOutHandler()).start();
 
         super.onDestroy();
     }
@@ -48,7 +48,7 @@ public class OnlineService extends Service{
         }
     }
 
-    class IAmOutHanlder implements Runnable{
+    class IAmOutHandler implements Runnable{
         @Override
         public void run() {
             OnlineRequest.IAmOut(username);
