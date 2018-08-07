@@ -28,7 +28,7 @@ public class OnlineService extends Service{
 
         username = intent.getStringExtra("username");
 
-        LoginRequest.IAmReady(username);
+        new Thread(new IAmReadyHandler()).start();
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -36,9 +36,23 @@ public class OnlineService extends Service{
     @Override
     public void onDestroy() {
 
-        OnlineRequest.IAmOut(username);
+        new Thread(new IAmOutHanlder()).start();
 
         super.onDestroy();
+    }
+
+    class IAmReadyHandler implements Runnable{
+        @Override
+        public void run() {
+            LoginRequest.IAmReady(username);
+        }
+    }
+
+    class IAmOutHanlder implements Runnable{
+        @Override
+        public void run() {
+            OnlineRequest.IAmOut(username);
+        }
     }
 
 }

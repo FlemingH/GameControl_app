@@ -15,13 +15,14 @@ public class OnlineActivity extends AppCompatActivity{
 
     private TextView onlineState;
     private Button goControlB;
-
-    String username = this.getIntent().getExtras().getString("username");
+    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_online);
+
+        username = getIntent().getExtras().getString("username");
 
         //从Control返回不会调用
         //启动服务：向服务器发送在线信息

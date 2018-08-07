@@ -10,12 +10,13 @@ import android.widget.Toast;
 
 import com.example.fleming.request.LoginRequest;
 import com.example.fleming.request.OnlineRequest;
-import com.example.fleming.util.Tools;
 
 public class LoginActivity extends AppCompatActivity {
 
     private EditText username;
     private EditText password;
+    private boolean isAppOnline;
+    private boolean isLoginSuccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,15 +37,15 @@ public class LoginActivity extends AppCompatActivity {
 
                 } else {
 
-                    boolean isAppOnline = OnlineRequest.isAppOnline(username.getText().toString());
+                    new Thread(new IsAppOnlineHandler()).start();
 
                     if(isAppOnline) {
                         Toast.makeText(LoginActivity.this,"账号已在其他地方登录",Toast.LENGTH_SHORT).show();
                     } else {
 
-                        boolean flag = LoginRequest.IsLoginSuccess(username.getText().toString(), password.getText().toString());
+                        new Thread(new IsLoginSuccessHandler()).start();
 
-                        if (flag) {
+                        if (isLoginSuccess) {
                             //直接跳转，在下个页面创建的时候向服务器发送我上线的请求
                             Intent intent = new Intent();
                             intent.setClass(LoginActivity.this, OnlineActivity.class);
@@ -54,16 +55,28 @@ public class LoginActivity extends AppCompatActivity {
 
                             intent.putExtras(bundle);
 
-                            startActivityForResult(intent,0);
+                            startActivity(intent);
                         } else {
                             Toast.makeText(LoginActivity.this,"账号或密码输入错误",Toast.LENGTH_SHORT).show();
                         }
                     }
-
                 }
             }
-
         });
-
     }
+
+    class IsAppOnlineHandler implements Runnable{
+        @Override
+        public void run() {
+            isAppOnline = OnlineRequest.isAppOnline(username.getText().toString());
+        }
+    }
+
+    class IsLoginSuccessHandler implements Runnable{
+        @Override
+        public void run() {
+            isLoginSuccess = LoginRequest.IsLoginSuccess(username.getText().toString(), password.getText().toString());
+        }
+    }
+
 }

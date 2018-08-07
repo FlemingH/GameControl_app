@@ -24,6 +24,8 @@ import java.net.URISyntaxException;
 public class OnlineSocketService extends Service{
 
     private WebSocketClient mSocketClient;
+    private boolean isWebOnline;
+    private String username;
 
     Handler handler = new Handler();
 
@@ -38,14 +40,14 @@ public class OnlineSocketService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        String username = intent.getStringExtra("username");
+        username = intent.getStringExtra("username");
         initWebSocket(username);
 
         //查对面是否在线
-        boolean flag = OnlineRequest.isWebOnline(username);
+        new Thread(new IsWebOnlineHandler()).start();
 
         //对面在线的情况：改页面在线标志，改按钮可以点击，向对面发送socket表明我上线了
-        if (flag) {
+        if (isWebOnline) {
             onlineActivity.onWebOnLineMessage();
 
             Gson gson = new Gson();
@@ -66,6 +68,15 @@ public class OnlineSocketService extends Service{
     public void onDestroy() {
         mSocketClient.close();
         super.onDestroy();
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    class IsWebOnlineHandler implements Runnable{
+        @Override
+        public void run() {
+            isWebOnline = OnlineRequest.isWebOnline(username);
+        }
     }
 
     //----------------------------------------------------------------------------------------------
