@@ -7,6 +7,11 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
+import com.example.fleming.gc.OnlineActivity;
+import com.example.fleming.request.OnlineRequest;
+import com.example.fleming.request.form.SocketMessage;
+import com.google.gson.Gson;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -21,6 +26,9 @@ public class OnlineSocketService extends Service{
     private String username;
     private Handler handler;
     private WebSocket mWebSocket;
+    private boolean isWebOnline;
+    private OnlineActivity onlineActivity;
+    private Gson gson;
 
     @Nullable
     @Override
@@ -33,7 +41,25 @@ public class OnlineSocketService extends Service{
 
         username = intent.getStringExtra("username");
         handler = new Handler();
+        onlineActivity = new OnlineActivity();
+        gson = new Gson();
         connect();
+
+        new Thread(new isWebOnlineHandler()).start();
+
+        if(isWebOnline){
+            onlineActivity.onWebOnLineMessage();
+
+            Gson gson = new Gson();
+            SocketMessage socketMessage = new SocketMessage();
+            socketMessage.setData(username);
+            socketMessage.setMessageType("AppIsOnline");
+            String json = gson.toJson(socketMessage);
+
+            if (mWebSocket != null) {
+                mWebSocket.send(json);
+            }
+        }
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -42,6 +68,15 @@ public class OnlineSocketService extends Service{
     public void onDestroy() {
         mWebSocket.cancel();
         super.onDestroy();
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    class isWebOnlineHandler implements Runnable{
+        @Override
+        public void run() {
+            isWebOnline = OnlineRequest.isWebOnline(username);
+        }
     }
 
     //----------------------------------------------------------------------------------------------
@@ -68,21 +103,44 @@ public class OnlineSocketService extends Service{
         @Override
         public void onMessage(WebSocket webSocket, String text) {
             super.onMessage(webSocket, text);
+
+            SocketMessage socketMessage = gson.fromJson(text, SocketMessage.class);
+
+            //能收到两种消息：对面上线，对面下线
+            if ("webIsOnline".equals(socketMessage.getMessageType())){
+                onlineActivity.onWebOnLineMessage();
+            } else if ("webIsOffline".equals(socketMessage.getMessageType())) {
+                onlineActivity.onWebOfflineMessage();
+            }
+
         }
 
         @Override
         public void onClosing(WebSocket webSocket, int code, String reason) {
             super.onClosing(webSocket, code, reason);
-        }
 
-        @Override
-        public void onClosed(WebSocket webSocket, int code, String reason) {
-            super.onClosed(webSocket, code, reason);
-        }
+            SocketMessage socketMessage = new SocketMessage();
 
-        @Override
-        public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-            super.onFailure(webSocket, t, response);
+            //向对面发送的下线消息
+            socketMessage.setMessageType("AppIsOffline");
+            socketMessage.setData(username);
+            String json = gson.toJson(socketMessage);
+
+            if(mWebSocket != null){
+                mWebSocket.send(json);
+            }
+
+            new Thread(){
+                public void run() {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(),"连接断开",Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }.start();
+
         }
     }
 
