@@ -13,14 +13,15 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.fleming.androidService.control.Control;
-import com.pusher.java_websocket.client.WebSocketClient;
-import com.pusher.java_websocket.drafts.Draft_10;
-import com.pusher.java_websocket.handshake.ServerHandshake;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
 
 public class ControlActivity extends AppCompatActivity{
 
@@ -69,6 +70,7 @@ public class ControlActivity extends AppCompatActivity{
     //y轴数据
     private int y;
 
+    //提示文字
     private TextView textView;
 
     //三个按键
@@ -77,7 +79,7 @@ public class ControlActivity extends AppCompatActivity{
     private ImageButton sButton;
 
     //控制socket
-    private WebSocketClient mSocketClient;
+    private WebSocket mWebSocket;
 
     String username = getIntent().getStringExtra("username");
 
@@ -88,7 +90,8 @@ public class ControlActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_control);
 
-        initWebSocket(username);
+        //建立webSocket连接
+        connect();
 
         control = new Control();
 
@@ -136,12 +139,12 @@ public class ControlActivity extends AppCompatActivity{
             //设置按下的动作
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                 wButton.setBackgroundResource(R.drawable.b2w);
-                control.wButtonDown(mSocketClient);
+                control.wButtonDown(mWebSocket);
 
             //设置抬起的动作
             } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                 wButton.setBackgroundResource(R.drawable.b1w);
-                control.wButtonUp(mSocketClient);
+                control.wButtonUp(mWebSocket);
             }
 
             return false;
@@ -158,12 +161,12 @@ public class ControlActivity extends AppCompatActivity{
             //设置按下的动作
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                 sButton.setBackgroundResource(R.drawable.b2s);
-                control.sButtonDown(mSocketClient);
+                control.sButtonDown(mWebSocket);
 
                 //设置抬起的动作
             } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                 sButton.setBackgroundResource(R.drawable.b1s);
-                control.sButtonUp(mSocketClient);
+                control.sButtonUp(mWebSocket);
             }
 
             return false;
@@ -261,37 +264,32 @@ public class ControlActivity extends AppCompatActivity{
     //----------------------------------------------------------------------------------------------
 
     //此websocket只传信息不接收信息：分别在加速减速左右时传信息————五种信息
-    private void initWebSocket(final String username) {
+    private final class ControlSocketListener extends WebSocketListener{
+        @Override
+        public void onOpen(WebSocket webSocket, Response response) {
+            super.onOpen(webSocket, response);
+            Toast.makeText(getApplicationContext(),"控制开启",Toast.LENGTH_SHORT).show();
+        }
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+        @Override
+        public void onClosing(WebSocket webSocket, int code, String reason) {
+            super.onClosing(webSocket, code, reason);
+            Toast.makeText(getApplicationContext(),"控制断开",Toast.LENGTH_SHORT).show();
+        }
+    }
 
-                URI uri = null;
+    //----------------------------------------------------------------------------------------------
 
-                try {
-                    uri = new URI("ws://118.25.180.193:8090/SocketHandle/control/"+username);
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
-                }
+    private void connect(){
+        ControlSocketListener listener = new ControlSocketListener();
+        Request request = new Request.Builder()
+                .url("ws://118.25.180.193:8090/SocketHandle/control/"+username)
+                .build();
+        OkHttpClient client = new OkHttpClient();
 
-                mSocketClient = new WebSocketClient(uri, new Draft_10()) {
-                    @Override
-                    public void onOpen(ServerHandshake handshakedata) { }
+        mWebSocket = client.newWebSocket(request, listener);
 
-                    @Override
-                    public void onMessage(String message) { }
-
-                    @Override
-                    public void onClose(int code, String reason, boolean remote) { }
-
-                    @Override
-                    public void onError(Exception ex) { }
-                };
-
-            }
-        });
-
+        client.dispatcher().executorService().shutdown();
     }
 
     //----------------------------------------------------------------------------------------------
@@ -315,7 +313,7 @@ public class ControlActivity extends AppCompatActivity{
                 //获取y的值
                 y = (int) event.values[SensorManager.DATA_Y];
                 //发送数据
-                control.dChange(mSocketClient,y);
+                control.dChange(mWebSocket,y);
             }
         }
 
@@ -325,7 +323,7 @@ public class ControlActivity extends AppCompatActivity{
 
     @Override
     protected void onDestroy() {
-        mSocketClient.close();
+        mWebSocket.cancel();
         super.onDestroy();
         //解注册
         MyManage.unregisterListener(MySensor_Gravity_listener);

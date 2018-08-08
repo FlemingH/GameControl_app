@@ -4,6 +4,8 @@ import com.example.fleming.request.form.SocketMessage;
 import com.google.gson.Gson;
 import com.pusher.java_websocket.client.WebSocketClient;
 
+import okhttp3.WebSocket;
+
 public class Control {
 
     private Gson gson = new Gson();
@@ -11,72 +13,72 @@ public class Control {
 
     /**
      * w键按下
-     * @param mSocketClient
+     * @param mWebSocket
      */
-    public void wButtonDown(WebSocketClient mSocketClient){
+    public void wButtonDown(WebSocket mWebSocket){
         socketMessage.setData("");
         socketMessage.setMessageType("wButtonDown");
         String json = gson.toJson(socketMessage);
 
-        if (mSocketClient != null) {
-            mSocketClient.send(json);
+        if (mWebSocket != null) {
+            mWebSocket.send(json);
         }
     }
 
     /**
      * w键松开
-     * @param mSocketClient
+     * @param mWebSocket
      */
-    public void wButtonUp(WebSocketClient mSocketClient){
+    public void wButtonUp(WebSocket mWebSocket){
         socketMessage.setData("");
         socketMessage.setMessageType("wButtonUp");
         String json = gson.toJson(socketMessage);
 
-        if (mSocketClient != null) {
-            mSocketClient.send(json);
+        if (mWebSocket != null) {
+            mWebSocket.send(json);
         }
     }
 
     /**
      * s键按下
-     * @param mSocketClient
+     * @param mWebSocket
      */
-    public void sButtonDown(WebSocketClient mSocketClient){
+    public void sButtonDown(WebSocket mWebSocket){
         socketMessage.setData("");
         socketMessage.setMessageType("sButtonDown");
         String json = gson.toJson(socketMessage);
 
-        if (mSocketClient != null) {
-            mSocketClient.send(json);
+        if (mWebSocket != null) {
+            mWebSocket.send(json);
         }
     }
 
     /**
      * s键松开
-     * @param mSocketClient
+     * @param mWebSocket
      */
-    public void sButtonUp(WebSocketClient mSocketClient){
+    public void sButtonUp(WebSocket mWebSocket){
         socketMessage.setData("");
         socketMessage.setMessageType("sButtonUp");
         String json = gson.toJson(socketMessage);
 
-        if (mSocketClient != null) {
-            mSocketClient.send(json);
+        if (mWebSocket != null) {
+            mWebSocket.send(json);
         }
     }
 
     /**
      * 方向改变：-10~9；-10=-9
-     * @param mSocketClient
+     * @param mWebSocket
      * @param num
      */
-    public void dChange(WebSocketClient mSocketClient, int num){
+    public void dChange(WebSocket mWebSocket, int num){
         socketMessage.setData(num+"");
         socketMessage.setMessageType("dChange");
         String json = gson.toJson(socketMessage);
 
-        if (mSocketClient != null) {
-            mSocketClient.send(json);
+        if (mWebSocket != null) {
+            mWebSocket.send(json);
         }
     }
 
