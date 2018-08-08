@@ -27,55 +27,59 @@ public class LoginActivity extends AppCompatActivity {
         password = findViewById(R.id.password);
         Button lbutton = findViewById(R.id.lbutton);
 
+        //按钮点击，新建登陆服务，用于验证，跳转页面时关闭服务
         lbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if("".equals(username.getText().toString()) || "".equals(password.getText().toString())){
-
-                    Toast.makeText(LoginActivity.this,"请补全信息",Toast.LENGTH_SHORT).show();
-
+                if("".equals(username.getText().toString()) || "".equals(username.getText().toString())) {
+                    Toast.makeText(getApplicationContext(),"请补全登录信息",Toast.LENGTH_SHORT).show();
                 } else {
 
-                    new Thread(new IsAppOnlineHandler()).start();
+                    new Thread(new LoginHandler()).start();
 
-                    if(isAppOnline) {
-                        Toast.makeText(LoginActivity.this,"账号已在其他地方登录",Toast.LENGTH_SHORT).show();
+                    if(isAppOnline){
+                        Toast.makeText(getApplicationContext(),"账号已在其他地方登陆",Toast.LENGTH_SHORT).show();
                     } else {
 
-                        new Thread(new IsLoginSuccessHandler()).start();
+                        if(isLoginSuccess){
 
-                        if (isLoginSuccess) {
-                            //直接跳转，在下个页面创建的时候向服务器发送我上线的请求
-                            Intent intent = new Intent();
-                            intent.setClass(LoginActivity.this, OnlineActivity.class);
-
+                            Intent intent = new Intent(LoginActivity.this, OnlineActivity.class);
                             Bundle bundle = new Bundle();
-                            bundle.putString("username",username.getText().toString());
-
+                            bundle.putString("username", username.getText().toString());
                             intent.putExtras(bundle);
-
                             startActivity(intent);
+
                         } else {
-                            Toast.makeText(LoginActivity.this,"账号或密码输入错误",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(),"账号或密码输入错误",Toast.LENGTH_SHORT).show();
                         }
+
                     }
+
                 }
             }
         });
     }
 
-    class IsAppOnlineHandler implements Runnable{
+    class LoginHandler implements Runnable{
         @Override
         public void run() {
-            isAppOnline = OnlineRequest.isAppOnline(username.getText().toString());
+            new Thread(new isAppOnlineHandler()).start();
+            new Thread(new isLoginSuccessHandler()).start();
         }
     }
 
-    class IsLoginSuccessHandler implements Runnable{
+    class isLoginSuccessHandler implements Runnable{
         @Override
         public void run() {
             isLoginSuccess = LoginRequest.IsLoginSuccess(username.getText().toString(), password.getText().toString());
+        }
+    }
+
+    class isAppOnlineHandler implements Runnable{
+        @Override
+        public void run() {
+            isAppOnline = OnlineRequest.isAppOnline(username.getText().toString());
         }
     }
 

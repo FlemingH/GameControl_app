@@ -7,29 +7,20 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
-import com.example.fleming.gc.OnlineActivity;
-import com.example.fleming.request.OnlineRequest;
-import com.example.fleming.request.form.SocketMessage;
-import com.google.gson.Gson;
-import com.pusher.java_websocket.client.WebSocketClient;
-import com.pusher.java_websocket.drafts.Draft_10;
-import com.pusher.java_websocket.handshake.ServerHandshake;
-
-import java.net.URI;
-import java.net.URISyntaxException;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
 
 /**
  * 只处理上下线socket信息，服务器信息交给另一个服务
  */
 public class OnlineSocketService extends Service{
 
-    private WebSocketClient mSocketClient;
-    private boolean isWebOnline;
     private String username;
-
-    Handler handler = new Handler();
-
-    OnlineActivity onlineActivity = new OnlineActivity();
+    private Handler handler;
+    private WebSocket mWebSocket;
 
     @Nullable
     @Override
@@ -41,137 +32,70 @@ public class OnlineSocketService extends Service{
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         username = intent.getStringExtra("username");
-        initWebSocket(username);
-
-        //查对面是否在线
-        new Thread(new IsWebOnlineHandler()).start();
-
-        //对面在线的情况：改页面在线标志，改按钮可以点击，向对面发送socket表明我上线了
-        if (isWebOnline) {
-            onlineActivity.onWebOnLineMessage();
-
-            Gson gson = new Gson();
-            SocketMessage socketMessage = new SocketMessage();
-            socketMessage.setData(username);
-            socketMessage.setMessageType("AppIsOnline");
-            String json = gson.toJson(socketMessage);
-
-            if (mSocketClient != null) {
-                mSocketClient.send(json);
-            }
-        }
+        handler = new Handler();
+        connect();
 
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
-        mSocketClient.close();
+        mWebSocket.cancel();
         super.onDestroy();
     }
 
     //----------------------------------------------------------------------------------------------
 
-    class IsWebOnlineHandler implements Runnable{
+    private final class OnlineWebSocketListener extends WebSocketListener {
+
         @Override
-        public void run() {
-            isWebOnline = OnlineRequest.isWebOnline(username);
+        public void onOpen(WebSocket webSocket, Response response) {
+            super.onOpen(webSocket, response);
+
+            new Thread(){
+                public void run() {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(),"连接成功",Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }.start();
+
+        }
+
+        @Override
+        public void onMessage(WebSocket webSocket, String text) {
+            super.onMessage(webSocket, text);
+        }
+
+        @Override
+        public void onClosing(WebSocket webSocket, int code, String reason) {
+            super.onClosing(webSocket, code, reason);
+        }
+
+        @Override
+        public void onClosed(WebSocket webSocket, int code, String reason) {
+            super.onClosed(webSocket, code, reason);
+        }
+
+        @Override
+        public void onFailure(WebSocket webSocket, Throwable t, Response response) {
+            super.onFailure(webSocket, t, response);
         }
     }
 
-    //----------------------------------------------------------------------------------------------
+    private void connect(){
+        OnlineWebSocketListener listener = new OnlineWebSocketListener();
+        Request request = new Request.Builder()
+                .url("ws://118.25.180.193:8090/SocketHandle/app/"+username)
+                .build();
+        OkHttpClient client = new OkHttpClient();
 
-    private void initWebSocket(final String username) {
+        mWebSocket = client.newWebSocket(request, listener);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                URI uri = null;
-
-                try {
-                    uri = new URI("ws://118.25.180.193:8090/SocketHandle/app/"+username);
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
-                }
-
-                mSocketClient = new WebSocketClient(uri, new Draft_10()) {
-
-                    Gson gson = new Gson();
-
-                    @Override
-                    public void onOpen(ServerHandshake handshakedata) {
-                        new Thread(){
-                            public void run() {
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getApplicationContext(),"连接成功",Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        }.start();
-                    }
-
-                    //在这种情况下，分别是对面不在线然后上线、对面在线然后下线
-                    @Override
-                    public void onMessage(String message) {
-
-                        SocketMessage socketMessage = gson.fromJson(message, SocketMessage.class);
-
-                        //能收到两种消息：对面上线，对面下线
-                        if ("webIsOnline".equals(socketMessage.getMessageType())){
-                            onlineActivity.onWebOnLineMessage();
-                        } else if ("webIsOffline".equals(socketMessage.getMessageType())) {
-                            onlineActivity.onWebOfflineMessage();
-                        }
-
-                    }
-
-                    @Override
-                    public void onClose(int code, String reason, boolean remote) {
-
-                        SocketMessage socketMessage = new SocketMessage();
-
-                        //向对面发送的下线消息
-                        socketMessage.setMessageType("AppIsOffline");
-                        socketMessage.setData(username);
-                        String json = gson.toJson(socketMessage);
-
-                        if(mSocketClient != null){
-                            mSocketClient.send(json);
-                        }
-
-                        new Thread(){
-                            public void run() {
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getApplicationContext(),"连接断开",Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        }.start();
-                    }
-
-                    @Override
-                    public void onError(Exception ex) {
-                        new Thread(){
-                            public void run() {
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getApplicationContext(),"连接错误",Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        }.start();
-
-                    }
-                };
-
-            }
-        }).start();
+        client.dispatcher().executorService().shutdown();
     }
 
 }
