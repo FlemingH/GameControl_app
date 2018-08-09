@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import com.example.fleming.gc.OnlineActivity;
-import com.example.fleming.request.OnlineRequest;
 import com.example.fleming.request.form.SocketMessage;
 import com.google.gson.Gson;
 
@@ -26,7 +25,6 @@ public class OnlineSocketService extends Service{
     private String username;
     private Handler handler;
     private WebSocket mWebSocket;
-    private boolean isWebOnline;
     private OnlineActivity onlineActivity;
     private Gson gson;
 
@@ -45,22 +43,6 @@ public class OnlineSocketService extends Service{
         gson = new Gson();
         connect();
 
-        new Thread(new isWebOnlineHandler()).start();
-
-        if(isWebOnline){
-            onlineActivity.onWebOnLineMessage();
-
-            Gson gson = new Gson();
-            SocketMessage socketMessage = new SocketMessage();
-            socketMessage.setData(username);
-            socketMessage.setMessageType("AppIsOnline");
-            String json = gson.toJson(socketMessage);
-
-            if (mWebSocket != null) {
-                mWebSocket.send(json);
-            }
-        }
-
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -68,15 +50,6 @@ public class OnlineSocketService extends Service{
     public void onDestroy() {
         mWebSocket.cancel();
         super.onDestroy();
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    class isWebOnlineHandler implements Runnable{
-        @Override
-        public void run() {
-            isWebOnline = OnlineRequest.isWebOnline(username);
-        }
     }
 
     //----------------------------------------------------------------------------------------------
@@ -118,17 +91,6 @@ public class OnlineSocketService extends Service{
         @Override
         public void onClosing(WebSocket webSocket, int code, String reason) {
             super.onClosing(webSocket, code, reason);
-
-            SocketMessage socketMessage = new SocketMessage();
-
-            //向对面发送的下线消息
-            socketMessage.setMessageType("AppIsOffline");
-            socketMessage.setData(username);
-            String json = gson.toJson(socketMessage);
-
-            if(mWebSocket != null){
-                mWebSocket.send(json);
-            }
 
             new Thread(){
                 public void run() {
