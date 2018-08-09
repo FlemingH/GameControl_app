@@ -2,7 +2,6 @@ package com.example.fleming.androidService.control;
 
 import com.example.fleming.request.form.SocketMessage;
 import com.google.gson.Gson;
-import com.pusher.java_websocket.client.WebSocketClient;
 
 import okhttp3.WebSocket;
 
