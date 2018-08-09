@@ -15,7 +15,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.fleming.androidService.control.Control;
+import com.example.fleming.request.form.SocketMessage;
+import com.google.gson.Gson;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -67,9 +68,6 @@ public class ControlActivity extends AppCompatActivity{
 
     private SensorManager MyManage;    //新建sensor的管理器
 
-    //y轴数据
-    private int y;
-
     //提示文字
     private TextView textView;
 
@@ -83,7 +81,9 @@ public class ControlActivity extends AppCompatActivity{
 
     String username;
 
-    Control control;
+    SocketMessage socketMessage;
+
+    Gson gson;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,10 +92,9 @@ public class ControlActivity extends AppCompatActivity{
 
         username = getIntent().getStringExtra("username");
 
-        //建立webSocket连接
-        connect();
+        gson = new Gson();
 
-        control = new Control();
+        socketMessage = new SocketMessage();
 
         //获得系统传感器服务管理权
         MyManage = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -141,12 +140,21 @@ public class ControlActivity extends AppCompatActivity{
             //设置按下的动作
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                 wButton.setBackgroundResource(R.drawable.b2w);
-                control.wButtonDown(mWebSocket);
+
+                socketMessage.setData("");
+                socketMessage.setMessageType("wButtonDown");
+                String json = gson.toJson(socketMessage);
+                mWebSocket.send(json);
 
             //设置抬起的动作
             } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                 wButton.setBackgroundResource(R.drawable.b1w);
-                control.wButtonUp(mWebSocket);
+
+                socketMessage.setData("");
+                socketMessage.setMessageType("wButtonUp");
+                String json = gson.toJson(socketMessage);
+                mWebSocket.send(json);
+
             }
 
             return false;
@@ -163,12 +171,21 @@ public class ControlActivity extends AppCompatActivity{
             //设置按下的动作
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                 sButton.setBackgroundResource(R.drawable.b2s);
-                control.sButtonDown(mWebSocket);
+
+                socketMessage.setData("");
+                socketMessage.setMessageType("sButtonDown");
+                String json = gson.toJson(socketMessage);
+                mWebSocket.send(json);
 
                 //设置抬起的动作
             } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                 sButton.setBackgroundResource(R.drawable.b1s);
-                control.sButtonUp(mWebSocket);
+
+                socketMessage.setData("");
+                socketMessage.setMessageType("sButtonUp");
+                String json = gson.toJson(socketMessage);
+                mWebSocket.send(json);
+
             }
 
             return false;
@@ -217,6 +234,9 @@ public class ControlActivity extends AppCompatActivity{
 
         //隐藏提示；显示三个按键，开启按键，注册重力感应
 
+        //建立webSocket连接
+        connect();
+
         textView.setVisibility(View.INVISIBLE);
 
         sButton.setVisibility(View.VISIBLE);
@@ -240,6 +260,11 @@ public class ControlActivity extends AppCompatActivity{
     private void show() {
 
         //显示提示，关闭按键，隐藏三个按键，解注册重力感应
+
+        //如果有就关闭socket
+        if(mWebSocket != null){
+            mWebSocket.cancel();
+        }
 
         textView.setVisibility(View.VISIBLE);
 
@@ -270,13 +295,13 @@ public class ControlActivity extends AppCompatActivity{
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
             super.onOpen(webSocket, response);
-            Toast.makeText(getApplicationContext(),"控制开启",Toast.LENGTH_SHORT).show();
+            System.out.println("连接成功");
         }
 
         @Override
         public void onClosing(WebSocket webSocket, int code, String reason) {
             super.onClosing(webSocket, code, reason);
-            Toast.makeText(getApplicationContext(),"控制断开",Toast.LENGTH_SHORT).show();
+            System.out.println("连接断开");
         }
     }
 
@@ -290,8 +315,6 @@ public class ControlActivity extends AppCompatActivity{
         OkHttpClient client = new OkHttpClient();
 
         mWebSocket = client.newWebSocket(request, listener);
-
-        client.dispatcher().executorService().shutdown();
     }
 
     //----------------------------------------------------------------------------------------------
@@ -320,7 +343,11 @@ public class ControlActivity extends AppCompatActivity{
                 if (lastY != newY){
                     //发送数据
                     lastY = newY;
-                    control.dChange(mWebSocket,lastY);
+
+                    socketMessage.setData(lastY+"");
+                    socketMessage.setMessageType("dChange");
+                    String json = gson.toJson(socketMessage);
+                    mWebSocket.send(json);
                 }
 
             }
@@ -332,7 +359,9 @@ public class ControlActivity extends AppCompatActivity{
 
     @Override
     protected void onDestroy() {
-        mWebSocket.cancel();
+        if(mWebSocket != null) {
+            mWebSocket.cancel();
+        }
         super.onDestroy();
         //解注册
         MyManage.unregisterListener(MySensor_Gravity_listener);
