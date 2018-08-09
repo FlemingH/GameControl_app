@@ -94,8 +94,6 @@ public class ControlActivity extends AppCompatActivity{
 
         gson = new Gson();
 
-        socketMessage = new SocketMessage();
-
         //获得系统传感器服务管理权
         MyManage = (SensorManager) getSystemService(SENSOR_SERVICE);
         mVisible = true;
@@ -137,6 +135,8 @@ public class ControlActivity extends AppCompatActivity{
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
 
+            socketMessage = new SocketMessage();
+
             //设置按下的动作
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                 wButton.setBackgroundResource(R.drawable.b2w);
@@ -167,6 +167,8 @@ public class ControlActivity extends AppCompatActivity{
     private final View.OnTouchListener sOnTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
+
+            socketMessage = new SocketMessage();
 
             //设置按下的动作
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
@@ -249,7 +251,7 @@ public class ControlActivity extends AppCompatActivity{
 
         //注册重力感应服务
         boolean enable = MyManage.registerListener(MySensor_Gravity_listener, MyManage.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_UI);
+                SensorManager.SENSOR_DELAY_NORMAL);
         if (!enable) {
             MyManage.unregisterListener(MySensor_Gravity_listener);
         }
@@ -333,6 +335,8 @@ public class ControlActivity extends AppCompatActivity{
         @Override
         public void onSensorChanged(SensorEvent event) {
 
+            socketMessage = new SocketMessage();
+
             if (event.sensor == null) {
                 return;
             }
@@ -348,6 +352,7 @@ public class ControlActivity extends AppCompatActivity{
                     socketMessage.setMessageType("dChange");
                     String json = gson.toJson(socketMessage);
                     mWebSocket.send(json);
+
                 }
 
             }
