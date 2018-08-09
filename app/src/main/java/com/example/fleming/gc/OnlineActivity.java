@@ -1,6 +1,9 @@
 package com.example.fleming.gc;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +19,19 @@ public class OnlineActivity extends AppCompatActivity{
     private TextView onlineState;
     private Button goControlB;
     private String username;
+
+    BroadcastMain receiver;
+
+    public class BroadcastMain extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if("webIsOnline".equals(intent.getStringExtra("msg"))){
+                onWebOnLineMessage();
+            } else if ("webIsOffline".equals(intent.getStringExtra("msg"))){
+                onWebOfflineMessage();
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +52,12 @@ public class OnlineActivity extends AppCompatActivity{
         Intent intentOnlineSocketService = new Intent(OnlineActivity.this, OnlineSocketService.class);
         intentOnlineSocketService.putExtras(bundle);
         startService(intentOnlineSocketService);
+
+        //注册广播
+        receiver = new BroadcastMain();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("OnlineSocket");
+        registerReceiver(receiver, filter);
 
     }
 

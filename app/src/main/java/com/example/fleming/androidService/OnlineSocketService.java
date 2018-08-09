@@ -2,6 +2,7 @@ package com.example.fleming.androidService;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -78,9 +79,23 @@ public class OnlineSocketService extends Service{
 
             //能收到两种消息：对面上线，对面下线
             if ("webIsOnline".equals(socketMessage.getMessageType())){
-                System.out.println("web上线");
+
+                Intent intentWebOnline = new Intent();
+                intentWebOnline.setAction("OnlineSocket");
+                Bundle bundle = new Bundle();
+                bundle.putString("msg","webIsOnline");
+                intentWebOnline.putExtras(bundle);
+                sendBroadcast(intentWebOnline);
+
             } else if ("webIsOffline".equals(socketMessage.getMessageType())) {
-                System.out.println("web下线");
+
+                Intent intentWebOnline = new Intent();
+                intentWebOnline.setAction("OnlineSocket");
+                Bundle bundle = new Bundle();
+                bundle.putString("msg","webIsOffline");
+                intentWebOnline.putExtras(bundle);
+                sendBroadcast(intentWebOnline);
+
             }
 
         }
