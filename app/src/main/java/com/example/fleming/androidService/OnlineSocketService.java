@@ -7,7 +7,6 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
-import com.example.fleming.gc.OnlineActivity;
 import com.example.fleming.request.form.SocketMessage;
 import com.google.gson.Gson;
 
@@ -25,7 +24,6 @@ public class OnlineSocketService extends Service{
     private String username;
     private Handler handler;
     private WebSocket mWebSocket;
-    private OnlineActivity onlineActivity;
     private Gson gson;
 
     @Nullable
@@ -39,7 +37,6 @@ public class OnlineSocketService extends Service{
 
         username = intent.getStringExtra("username");
         handler = new Handler();
-        onlineActivity = new OnlineActivity();
         gson = new Gson();
         connect();
 
@@ -81,9 +78,9 @@ public class OnlineSocketService extends Service{
 
             //能收到两种消息：对面上线，对面下线
             if ("webIsOnline".equals(socketMessage.getMessageType())){
-                onlineActivity.onWebOnLineMessage();
+                System.out.println("web上线");
             } else if ("webIsOffline".equals(socketMessage.getMessageType())) {
-                onlineActivity.onWebOfflineMessage();
+                System.out.println("web下线");
             }
 
         }
@@ -114,8 +111,6 @@ public class OnlineSocketService extends Service{
         OkHttpClient client = new OkHttpClient();
 
         mWebSocket = client.newWebSocket(request, listener);
-
-        client.dispatcher().executorService().shutdown();
     }
 
 }

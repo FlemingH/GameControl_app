@@ -22,14 +22,4 @@ public class OnlineRequest {
         return flag;
     }
 
-    /**
-     * 向服务器发送的下线请求，把信息从map里移除
-     * @param username
-     */
-    public static void IAmOut(String username){
-
-        Tools.httpRequest("http://118.25.180.193:8090/AppIsOut?username="+username,"GET");
-
-    }
-
 }
