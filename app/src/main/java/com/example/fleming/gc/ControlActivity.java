@@ -303,19 +303,26 @@ public class ControlActivity extends AppCompatActivity{
         MyManage.unregisterListener(MySensor_Gravity_listener);
     }
 
+    private int lastY = 20;
+
     //sensor监听事件
     SensorEventListener MySensor_Gravity_listener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
+
             if (event.sensor == null) {
                 return;
             }
             //新建加速度计变化事件
             if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
                 //获取y的值
-                y = (int) event.values[SensorManager.DATA_Y];
-                //发送数据
-                control.dChange(mWebSocket,y);
+                int newY = (int) event.values[SensorManager.DATA_Y];
+                if (lastY != newY){
+                    //发送数据
+                    lastY = newY;
+                    control.dChange(mWebSocket,lastY);
+                }
+
             }
         }
 

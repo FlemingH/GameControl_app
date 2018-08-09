@@ -78,6 +78,9 @@ public class OnlineActivity extends AppCompatActivity{
         intentOnlineSocketService.putExtras(bundle);
         stopService(intentOnlineSocketService);
 
+        //关闭广播
+        unregisterReceiver(receiver);
+
         super.onDestroy();
     }
 

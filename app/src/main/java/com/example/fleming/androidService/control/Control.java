@@ -15,6 +15,7 @@ public class Control {
      * @param mWebSocket
      */
     public void wButtonDown(WebSocket mWebSocket){
+        System.out.println("w按下");
         socketMessage.setData("");
         socketMessage.setMessageType("wButtonDown");
         String json = gson.toJson(socketMessage);
@@ -29,6 +30,7 @@ public class Control {
      * @param mWebSocket
      */
     public void wButtonUp(WebSocket mWebSocket){
+        System.out.println("w松开");
         socketMessage.setData("");
         socketMessage.setMessageType("wButtonUp");
         String json = gson.toJson(socketMessage);
@@ -43,6 +45,7 @@ public class Control {
      * @param mWebSocket
      */
     public void sButtonDown(WebSocket mWebSocket){
+        System.out.println("s按下");
         socketMessage.setData("");
         socketMessage.setMessageType("sButtonDown");
         String json = gson.toJson(socketMessage);
@@ -57,6 +60,7 @@ public class Control {
      * @param mWebSocket
      */
     public void sButtonUp(WebSocket mWebSocket){
+        System.out.println("s松开");
         socketMessage.setData("");
         socketMessage.setMessageType("sButtonUp");
         String json = gson.toJson(socketMessage);
@@ -72,6 +76,7 @@ public class Control {
      * @param num
      */
     public void dChange(WebSocket mWebSocket, int num){
+        System.out.println("方向"+num);
         socketMessage.setData(num+"");
         socketMessage.setMessageType("dChange");
         String json = gson.toJson(socketMessage);
