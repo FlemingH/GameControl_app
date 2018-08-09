@@ -81,7 +81,7 @@ public class ControlActivity extends AppCompatActivity{
     //控制socket
     private WebSocket mWebSocket;
 
-    String username = getIntent().getStringExtra("username");
+    String username;
 
     Control control;
 
@@ -89,6 +89,8 @@ public class ControlActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_control);
+
+        username = getIntent().getStringExtra("username");
 
         //建立webSocket连接
         connect();

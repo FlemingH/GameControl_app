@@ -81,7 +81,6 @@ public class OnlineActivity extends AppCompatActivity{
         super.onDestroy();
     }
 
-
     //----------------------------------------------------------------------------------------------
 
     //用于处理Web上线时发来的信息：改页面在线标志，改按钮可以点击
@@ -117,12 +116,11 @@ public class OnlineActivity extends AppCompatActivity{
     public final View.OnClickListener bocl = new View.OnClickListener(){
         @Override
         public void onClick(View view) {
-            Intent intent = new Intent();
-            intent.setClass(OnlineActivity.this, ControlActivity.class);
+            Intent intent = new Intent(OnlineActivity.this, ControlActivity.class);
             Bundle bundle = new Bundle();
             bundle.putString("username", username);
             intent.putExtras(bundle);
-            startActivityForResult(intent,0);
+            startActivity(intent);
         }
     };
 
