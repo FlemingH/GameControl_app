@@ -115,3 +115,15 @@ dependencies {
 ```
 
 ## 示例图片 Sample
+![example1](https://github.com/FlemingH/GameControl_app/blob/master/app_example1.jpg)
+![example1](https://github.com/FlemingH/GameControl_app/blob/master/app_example2.jpg)
+![example1](https://github.com/FlemingH/GameControl_app/blob/master/app_example3.jpg)
+![example1](https://github.com/FlemingH/GameControl_app/blob/master/app_example4.jpg)
+
+## 参与者介绍 Contributors 
+[Fleming](https://github.com/FlemingH)-Initial work
+
+## License
+[MIT](http://opensource.org/licenses/MIT)
+
+Copyright (c) 2018-present, Limi (Fleming) Fei
