@@ -65,7 +65,7 @@ Send direction control information.
 ---
 
 加速键发送信息。<br>
-Acceleration key sends information.
+Acceleration button sends information.
 ```java
 //加速键事件
     private final View.OnTouchListener wOnTouchListener = new View.OnTouchListener() {
